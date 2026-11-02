@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Academic Assistant AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<!-- KaTeX — lightweight LaTeX math rendering -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     AUTH OVERLAY
+══════════════════════════════════════════════════════════ -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Academic Assistant AI</span>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form active">
+      <h2>Welcome back</h2>
+      <p class="auth-subtitle">Sign in to continue your learning journey</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@university.edu" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password"/>
+      </div>
+      <div id="login-error" class="auth-error hidden"></div>
+      <button class="btn btn-primary btn-full" onclick="submitLogin()">
+        <span id="login-btn-text">Sign In</span>
+        <i id="login-spinner" class="fa-solid fa-spinner fa-spin hidden"></i>
+      </button>
+      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuth('register')">Sign up</a></p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="auth-form">
+      <h2>Create account</h2>
+      <p class="auth-subtitle">Start your personalized learning experience</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your full name"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@university.edu"/>
+      </div>
+      <div class="form-group">
+        <label>Password <small>(min. 8 characters)</small></label>
+        <input type="password" id="reg-password" placeholder="Create a password"/>
+      </div>
+      <div id="reg-error" class="auth-error hidden"></div>
+      <button class="btn btn-primary btn-full" onclick="submitRegister()">
+        <span id="reg-btn-text">Create Account</span>
+        <i id="reg-spinner" class="fa-solid fa-spinner fa-spin hidden"></i>
+      </button>
+      <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuth('login')">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════════════ -->
+<div id="app" class="app hidden">
+
+  <!-- Mobile top bar (visible only on small screens) -->
+  <div class="mobile-topbar" id="mobile-topbar">
+    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="openMobileSidebar()" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="mobile-topbar-logo">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Academic AI</span>
+    </div>
+    <div class="mobile-topbar-user" id="mobile-topbar-user"></div>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span class="sidebar-logo-text">Academic AI</span>
+      </div>
+      <!-- Desktop: collapse toggle -->
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <!-- Mobile: close drawer button -->
+      <button class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Close menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <i class="fa-solid fa-house"></i><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="materials">
+        <i class="fa-solid fa-folder-open"></i><span>My Materials</span>
+      </a>
+      <a href="#" class="nav-item" data-page="summarizer">
+        <i class="fa-solid fa-file-lines"></i><span>AI Summarizer</span>
+      </a>
+      <a href="#" class="nav-item" data-page="tutor">
+        <i class="fa-solid fa-robot"></i><span>AI Tutor</span>
+      </a>
+      <a href="#" class="nav-item" data-page="quiz">
+        <i class="fa-solid fa-circle-question"></i><span>Quiz Generator</span>
+      </a>
+      <a href="#" class="nav-item" data-page="insights">
+        <i class="fa-solid fa-chart-line"></i><span>Learning Insights</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div class="user-details">
+          <span class="user-name" id="sidebar-name">Loading…</span>
+          <span class="user-email" id="sidebar-email"></span>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="logout()" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content" id="main-content">
+
+    <!-- ── DASHBOARD ───────────────────────────────────────── -->
+    <section id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <h1 id="dash-greeting">Good morning!</h1>
+          <p class="page-subtitle">Here's your learning overview</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-folder-open"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-materials">0</span>
+            <span class="stat-label">Documents</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-quizzes">0</span>
+            <span class="stat-label">Quizzes Done</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-chart-simple"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-avg-score">—</span>
+            <span class="stat-label">Avg. Score</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-fire"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-streak">—</span>
+            <span class="stat-label">Best Score</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Materials</h3>
+            <a href="#" onclick="navigate('materials')" class="card-link">View all</a>
+          </div>
+          <div id="dash-recent-materials" class="card-body">
+            <div class="empty-state-sm">No materials uploaded yet</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
+          </div>
+          <div class="quick-actions">
+            <button class="quick-btn" onclick="navigate('materials')">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Material</span>
+            </button>
+            <button class="quick-btn" onclick="navigate('summarizer')">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>Summarize Doc</span>
+            </button>
+            <button class="quick-btn" onclick="navigate('tutor')">
+              <i class="fa-solid fa-robot"></i>
+              <span>Ask AI Tutor</span>
+            </button>
+            <button class="quick-btn" onclick="navigate('quiz')">
+              <i class="fa-solid fa-circle-question"></i>
+              <span>Take a Quiz</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-list-check"></i> Recent Activity</h3>
+          </div>
+          <div id="dash-activity" class="card-body">
+            <div class="empty-state-sm">No recent activity</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-lightbulb"></i> Study Tips</h3>
+          </div>
+          <div id="dash-tips" class="card-body tips-list">
+            <div class="tip-item"><i class="fa-solid fa-check-circle"></i> Upload your lecture PDFs to get started</div>
+            <div class="tip-item"><i class="fa-solid fa-check-circle"></i> Use the AI Summarizer to review key concepts quickly</div>
+            <div class="tip-item"><i class="fa-solid fa-check-circle"></i> Test yourself with the Quiz Generator before exams</div>
+            <div class="tip-item"><i class="fa-solid fa-check-circle"></i> Check Learning Insights to find your weak areas</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MY MATERIALS ────────────────────────────────────── -->
+    <section id="page-materials" class="page">
+      <div class="page-header">
+        <div>
+          <h1>My Materials</h1>
+          <p class="page-subtitle">Upload and manage your academic documents</p>
+        </div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="card upload-card" id="drop-zone">
+        <div class="upload-inner">
+          <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+          <h3>Upload PDF Document</h3>
+          <p>Drag and drop your PDF here, or click to browse</p>
+          <input type="file" id="file-input" accept=".pdf" hidden onchange="handleFileSelect(event)"/>
+          <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+            <i class="fa-solid fa-folder-open"></i> Choose File
+          </button>
+          <p class="upload-hint">Supported: PDF · Max size: 20 MB</p>
+        </div>
+      </div>
+
+      <!-- Upload progress -->
+      <div id="upload-progress" class="card upload-progress-card hidden">
+        <div class="progress-info">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <div>
+            <strong id="upload-filename">Uploading…</strong>
+            <p id="upload-status-text">Uploading file…</p>
+          </div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="upload-progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div id="mat-notification" class="notification hidden"></div>
+
+      <!-- Document list -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Uploaded Documents</h3>
+          <span id="mat-count" class="badge">0</span>
+        </div>
+        <div id="materials-list" class="materials-list">
+          <div class="empty-state">
+            <i class="fa-solid fa-folder-open"></i>
+            <h3>No documents yet</h3>
+            <p>Upload your first PDF to get started</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AI SUMMARIZER ───────────────────────────────────── -->
+    <section id="page-summarizer" class="page">
+      <div class="page-header">
+        <div>
+          <h1>AI Smart Summarizer</h1>
+          <p class="page-subtitle">Generate intelligent summaries of your academic materials</p>
+        </div>
+      </div>
+
+      <div class="tool-layout">
+        <div class="tool-sidebar">
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-book"></i> Select Document</h3>
+            <select id="sum-doc-select" class="select-input" onchange="onSumDocChange()">
+              <option value="">— Choose a document —</option>
+            </select>
+          </div>
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-list"></i> Summary Type</h3>
+            <div class="radio-group">
+              <label class="radio-item active" data-type="quick">
+                <input type="radio" name="sum-type" value="quick" checked/>
+                <div class="radio-content">
+                  <strong>Quick Summary</strong>
+                  <small>Concise overview (150–250 words)</small>
+                </div>
+              </label>
+              <label class="radio-item" data-type="detailed">
+                <input type="radio" name="sum-type" value="detailed"/>
+                <div class="radio-content">
+                  <strong>Detailed Summary</strong>
+                  <small>Comprehensive explanation (500–800 words)</small>
+                </div>
+              </label>
+              <label class="radio-item" data-type="topic">
+                <input type="radio" name="sum-type" value="topic"/>
+                <div class="radio-content">
+                  <strong>Topic-Based</strong>
+                  <small>Organized by chapters/subjects</small>
+                </div>
+              </label>
+              <label class="radio-item" data-type="keypoints">
+                <input type="radio" name="sum-type" value="keypoints"/>
+                <div class="radio-content">
+                  <strong>Key Points</strong>
+                  <small>Definitions, concepts, terminology</small>
+                </div>
+              </label>
+            </div>
+            <button class="btn btn-primary btn-full mt-3" id="sum-generate-btn" onclick="generateSummary()" disabled>
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Summary
+            </button>
+          </div>
+        </div>
+
+        <div class="tool-main">
+          <div class="card summary-output-card" id="summary-output-card">
+            <div id="summary-placeholder" class="summary-placeholder">
+              <i class="fa-solid fa-file-lines"></i>
+              <h3>Ready to summarize</h3>
+              <p>Select a document and summary type, then click Generate Summary</p>
+            </div>
+            <div id="summary-loading" class="loading-state hidden">
+              <div class="loading-dots"><span></span><span></span><span></span></div>
+              <p>Analyzing document and generating summary…</p>
+            </div>
+            <div id="summary-result" class="summary-result hidden">
+              <div class="summary-result-header">
+                <h3 id="summary-result-title">Summary</h3>
+                <div class="summary-actions">
+                  <button class="btn btn-sm btn-outline" onclick="copySummary()">
+                    <i class="fa-solid fa-copy"></i> Copy
+                  </button>
+                  <button class="btn btn-sm btn-outline" onclick="generateSummary()">
+                    <i class="fa-solid fa-rotate"></i> Regenerate
+                  </button>
+                </div>
+              </div>
+              <div id="summary-content" class="markdown-body"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AI TUTOR ────────────────────────────────────────── -->
+    <section id="page-tutor" class="page">
+      <div class="page-header">
+        <div>
+          <h1>AI Tutor</h1>
+          <p class="page-subtitle">Ask questions about your academic materials</p>
+        </div>
+      </div>
+
+      <div class="tutor-layout">
+        <div class="tutor-sidebar">
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-book"></i> Active Document</h3>
+            <select id="tutor-doc-select" class="select-input" onchange="onTutorDocChange()">
+              <option value="">— Choose a document —</option>
+            </select>
+          </div>
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-lightbulb"></i> Suggested Prompts</h3>
+            <div class="suggested-prompts" id="suggested-prompts">
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">Explain this topic in simple terms</button>
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">Give me an example of a key concept</button>
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">Explain this step by step</button>
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">What are the main differences between the key concepts?</button>
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">Summarize the most important points</button>
+              <button class="prompt-chip" onclick="useSuggestedPrompt(this)">What should I focus on for the exam?</button>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-full" onclick="clearTutorChat()">
+            <i class="fa-solid fa-trash"></i> Clear Conversation
+          </button>
+        </div>
+
+        <div class="tutor-main">
+          <div class="chat-container" id="chat-container">
+            <div id="chat-messages" class="chat-messages">
+              <div class="chat-welcome">
+                <div class="chat-avatar tutor">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="chat-bubble tutor">
+                  <p>Hello! I'm your AI Tutor. Select a document from the left panel and ask me anything about it. I'll answer based strictly on your uploaded material.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <div class="chat-input-wrap">
+              <textarea id="tutor-input" class="chat-input" placeholder="Ask a question about your document…" rows="1" onkeydown="handleTutorKey(event)" oninput="autoResizeTextarea(this)"></textarea>
+              <button class="btn-send" id="tutor-send-btn" onclick="sendTutorMessage()" disabled>
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── QUIZ GENERATOR ──────────────────────────────────── -->
+    <section id="page-quiz" class="page">
+      <!-- Config view -->
+      <div id="quiz-config-view">
+        <div class="page-header">
+          <div>
+            <h1>Quiz Generator</h1>
+            <p class="page-subtitle">Test your knowledge with AI-generated questions</p>
+          </div>
+        </div>
+        <div class="quiz-config-grid">
+          <div class="card quiz-config-card">
+            <h3><i class="fa-solid fa-gear"></i> Quiz Configuration</h3>
+            <div class="form-group">
+              <label>Source Document</label>
+              <select id="quiz-doc-select" class="select-input">
+                <option value="">— Choose a document —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Number of Questions</label>
+              <div class="btn-group">
+                <button class="btn-option active" data-value="5" onclick="selectOption(this,'quiz-count')">5</button>
+                <button class="btn-option" data-value="10" onclick="selectOption(this,'quiz-count')">10</button>
+                <button class="btn-option" data-value="15" onclick="selectOption(this,'quiz-count')">15</button>
+              </div>
+              <input type="hidden" id="quiz-count" value="5"/>
+            </div>
+            <div class="form-group">
+              <label>Difficulty Level</label>
+              <div class="btn-group">
+                <button class="btn-option active" data-value="easy" onclick="selectOption(this,'quiz-difficulty')">Easy</button>
+                <button class="btn-option" data-value="medium" onclick="selectOption(this,'quiz-difficulty')">Medium</button>
+                <button class="btn-option" data-value="hard" onclick="selectOption(this,'quiz-difficulty')">Hard</button>
+              </div>
+              <input type="hidden" id="quiz-difficulty" value="easy"/>
+            </div>
+            <div id="quiz-gen-error" class="auth-error hidden"></div>
+            <button class="btn btn-primary btn-full mt-3" id="quiz-generate-btn" onclick="generateQuiz()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Quiz
+            </button>
+          </div>
+          <div class="card quiz-history-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-clock-rotate-left"></i> Quiz History</h3>
+            </div>
+            <div id="quiz-history-list" class="quiz-history-list">
+              <div class="empty-state-sm">No quizzes taken yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz taking view -->
+      <div id="quiz-active-view" class="hidden">
+        <div class="quiz-header">
+          <div>
+            <h1 id="quiz-active-title">Quiz</h1>
+            <p class="page-subtitle" id="quiz-active-subtitle"></p>
+          </div>
+          <div class="quiz-progress-info">
+            <span id="quiz-question-counter">1 / 10</span>
+            <div class="quiz-progress-bar-wrap">
+              <div class="quiz-progress-bar" id="quiz-progress-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-body">
+          <div class="card quiz-question-card" id="quiz-question-card">
+            <div class="quiz-question-num" id="quiz-q-num">Question 1</div>
+            <p class="quiz-question-text" id="quiz-q-text"></p>
+            <div class="quiz-options" id="quiz-options"></div>
+          </div>
+
+          <div class="quiz-nav-row">
+            <button class="btn btn-outline" id="quiz-prev-btn" onclick="quizNav(-1)" disabled>
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <div class="quiz-dots" id="quiz-dots"></div>
+            <button class="btn btn-primary" id="quiz-next-btn" onclick="quizNav(1)">
+              Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="quiz-submit-row hidden" id="quiz-submit-row">
+            <div class="quiz-unanswered-warn" id="quiz-unanswered-warn"></div>
+            <button class="btn btn-success btn-lg" onclick="submitQuiz()">
+              <i class="fa-solid fa-flag-checkered"></i> Submit Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz results view -->
+      <div id="quiz-results-view" class="hidden">
+        <div class="page-header">
+          <div>
+            <h1>Quiz Results</h1>
+            <p class="page-subtitle">Here's how you performed</p>
+          </div>
+        </div>
+
+        <div class="results-hero card">
+          <div class="score-circle" id="results-score-circle">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" stroke-width="12"/>
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#2563EB" stroke-width="12"
+                      stroke-dasharray="327" stroke-dashoffset="327"
+                      id="score-ring" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:60px 60px"/>
+            </svg>
+            <div class="score-text">
+              <span class="score-pct" id="results-pct">0%</span>
+              <small>Score</small>
+            </div>
+          </div>
+          <div class="results-summary">
+            <h2 id="results-verdict"></h2>
+            <div class="results-stats">
+              <div class="res-stat green"><strong id="res-correct">0</strong><span>Correct</span></div>
+              <div class="res-stat red"><strong id="res-wrong">0</strong><span>Incorrect</span></div>
+              <div class="res-stat gray"><strong id="res-skipped">0</strong><span>Skipped</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card results-detail-card">
+          <h3 class="card-title">Answer Review</h3>
+          <div id="results-answers"></div>
+        </div>
+
+        <div class="results-actions">
+          <button class="btn btn-outline" onclick="retakeQuiz()">
+            <i class="fa-solid fa-rotate"></i> Retake Quiz
+          </button>
+          <button class="btn btn-primary" onclick="navigate('insights')">
+            <i class="fa-solid fa-chart-line"></i> View Insights
+          </button>
+          <button class="btn btn-outline" onclick="navigate('quiz')">
+            <i class="fa-solid fa-plus"></i> New Quiz
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LEARNING INSIGHTS ───────────────────────────────── -->
+    <section id="page-insights" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Learning Insights</h1>
+          <p class="page-subtitle">Track your progress and get personalized recommendations</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadRecommendations()">
+          <i class="fa-solid fa-lightbulb"></i> Get Recommendations
+        </button>
+      </div>
+
+      <div id="insights-empty" class="card empty-state hidden">
+        <i class="fa-solid fa-chart-line"></i>
+        <h3>No quiz data yet</h3>
+        <p>Complete at least one quiz to see your learning insights</p>
+        <button class="btn btn-primary" onclick="navigate('quiz')">Take a Quiz</button>
+      </div>
+
+      <div id="insights-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="ins-total-quizzes">0</span>
+              <span class="stat-label">Total Quizzes</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-chart-simple"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="ins-avg-score">—</span>
+              <span class="stat-label">Average Score</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-question"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="ins-total-questions">0</span>
+              <span class="stat-label">Questions Answered</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="fa-solid fa-trophy"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="ins-best-score">—</span>
+              <span class="stat-label">Best Score</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="insights-grid">
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Score History</h3>
+            <div class="chart-wrap">
+              <canvas id="score-history-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-chart-bar"></i> Topic Performance</h3>
+            <div class="chart-wrap">
+              <canvas id="topic-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="insights-detail-grid">
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-trophy" style="color:#22C55E"></i> Strong Topics</h3>
+            <div id="strong-topics" class="topic-list"></div>
+          </div>
+          <div class="card">
+            <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:#EF4444"></i> Needs Review</h3>
+            <div id="weak-topics" class="topic-list"></div>
+          </div>
+        </div>
+
+        <div class="card" id="recommendations-card" style="display:none">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-lightbulb"></i> Personalized Recommendations</h3>
+            <button class="btn btn-sm btn-outline" onclick="loadRecommendations()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+          <div id="recommendations-loading" class="loading-state hidden">
+            <div class="loading-dots"><span></span><span></span><span></span></div>
+            <p>Analyzing your performance and generating personalized recommendations…</p>
+          </div>
+          <div id="recommendations-content" class="markdown-body" style="padding:1rem"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast-container" class="toast-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

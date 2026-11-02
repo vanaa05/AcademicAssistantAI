@@ -1,0 +1,43 @@
+# ============================================================
+# .htaccess — Academic Assistant AI (project root)
+# ============================================================
+# Place this file in the root of your project on the web server.
+# Most shared hosts (InfinityFree, Hostinger, etc.) support it.
+# ============================================================
+
+Options -Indexes
+
+# ── Block direct access to sensitive files ───────────────────
+<FilesMatch "^(env\.php|env\.example\.php|database\.sql|README\.md|DEPLOY\.md)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ── Force HTTPS (uncomment after confirming SSL works) ───────
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ── Security headers ─────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ── PHP settings (apply on hosts that honour .htaccess PHP) ──
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_value upload_max_filesize 25M
+    php_value post_max_size 26M
+    php_value max_execution_time 120
+    php_value memory_limit 256M
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_value upload_max_filesize 25M
+    php_value post_max_size 26M
+    php_value max_execution_time 120
+    php_value memory_limit 256M
+</IfModule>

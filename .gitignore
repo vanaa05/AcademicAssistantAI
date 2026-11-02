@@ -1,0 +1,23 @@
+﻿# ============================================================
+# .gitignore — Academic Assistant AI
+# ============================================================
+
+# ── Credentials (NEVER commit these) ────────────────────────
+env.php
+
+# ── Uploaded PDFs (can be large; user data stays on server) ─
+api/uploads/*.pdf
+api/uploads/*.PDF
+uploads/*.pdf
+
+# ── OS / Editor noise ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── XAMPP / server logs ──────────────────────────────────────
+*.log
